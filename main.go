@@ -1,22 +1,22 @@
 package main
 
 import (
-    "fmt"
+	"fmt"
 	"os"
-    "time"
+	"time"
 
-    "gitlab.com/gomidi/midi/v2"
-    "gitlab.com/gomidi/midi/v2/drivers/rtmididrv"
+	"gitlab.com/gomidi/midi/v2"
+	"gitlab.com/gomidi/midi/v2/drivers/rtmididrv"
 )
 
 func main() {
-    drv, err := rtmididrv.New()
-    must(err)
+	drv, err := rtmididrv.New()
+	must(err)
 
-    defer drv.Close()
+	defer drv.Close()
 
-    ins, err := drv.Ins()
-    must(err)
+	ins, err := drv.Ins()
+	must(err)
 
 	if len(ins) < 1 {
 		fmt.Println("No inputs!")
@@ -27,13 +27,13 @@ func main() {
 		fmt.Printf("in[%d] = %v\n", i, in)
 	}
 
-    // takes the first input
-    in := ins[0]
+	// takes the first input
+	in := ins[0]
 
-    fmt.Printf("opening MIDI Port %v\n", in)
-    must(in.Open())
+	fmt.Printf("opening MIDI Port %v\n", in)
+	must(in.Open())
 
-    defer in.Close()
+	defer in.Close()
 
 	stop, err := midi.ListenTo(
 		in,
@@ -71,7 +71,7 @@ func main() {
 
 	fmt.Println("stopping")
 	stop()
-    fmt.Printf("closing MIDI Port %v\n", in)
+	fmt.Printf("closing MIDI Port %v\n", in)
 }
 
 func complain(err error) {
@@ -79,7 +79,7 @@ func complain(err error) {
 }
 
 func must(err error) {
-    if err != nil {
-        panic(err.Error())
-    }
+	if err != nil {
+		panic(err.Error())
+	}
 }
