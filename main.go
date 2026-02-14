@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"time"
 
 	"gitlab.com/gomidi/midi/v2"
 	"gitlab.com/gomidi/midi/v2/drivers/rtmididrv"
@@ -60,18 +59,14 @@ func main() {
 		midi.UseActiveSense(),
 		midi.UseTimeCode(),
 	)
+	defer stop()
 
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err)
 		return
 	}
 
-	fmt.Println("sleeping now")
-	time.Sleep(time.Second * 5)
-
-	fmt.Println("stopping")
-	stop()
-	fmt.Printf("closing MIDI Port %v\n", in)
+	fmt.Println("bye!")
 }
 
 func complain(err error) {
