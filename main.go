@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"gitlab.com/gomidi/midi/v2"
+	"gitlab.com/gomidi/midi/v2/drivers"
 	"gitlab.com/gomidi/midi/v2/drivers/rtmididrv"
 )
 
@@ -23,12 +25,23 @@ func main() {
 		os.Exit(1)
 	}
 
+	var bestIn drivers.In
 	for i, in := range ins {
-		fmt.Printf("in[%d] = %v\n", i, in)
+		fmt.Printf("in[%d] = %v [%v]\n", i, in)
+		if bestIn != nil {
+			continue
+		}
+		if strings.Contains(in.String(), "Midi Through") {
+			continue
+		}
+		bestIn = in
 	}
 
 	// takes the first input
-	in := ins[0]
+	in := bestIn
+	if in == nil {
+		in = ins[0]
+	}
 
 	fmt.Printf("opening MIDI Port %v\n", in)
 	must(in.Open())
@@ -56,9 +69,9 @@ func main() {
 			}
 		},
 		midi.UseSysEx(),
-		midi.HandleError(complain),
-		midi.UseActiveSense(),
-		midi.UseTimeCode(),
+		//midi.HandleError(complain),
+		//midi.UseActiveSense(),
+		//midi.UseTimeCode(),
 	)
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err)
