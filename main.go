@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -12,6 +12,9 @@ import (
 )
 
 func main() {
+	log.SetFlags(log.Lshortfile | log.Lmicroseconds)
+	log.SetOutput(os.Stdout)
+
 	drv, err := rtmididrv.New()
 	must(err)
 
@@ -21,13 +24,13 @@ func main() {
 	must(err)
 
 	if len(ins) < 1 {
-		fmt.Println("No inputs!")
+		log.Println("No inputs!")
 		os.Exit(1)
 	}
 
 	var bestIn drivers.In
 	for i, in := range ins {
-		fmt.Printf("in[%d] = %v [%v]\n", i, in)
+		log.Printf("in[%d] = %v", i, in)
 		if bestIn != nil {
 			continue
 		}
@@ -43,7 +46,7 @@ func main() {
 		in = ins[0]
 	}
 
-	fmt.Printf("opening MIDI Port %v\n", in)
+	log.Printf("opening MIDI Port %v", in)
 	must(in.Open())
 
 	defer in.Close()
@@ -51,42 +54,42 @@ func main() {
 	stop, err := midi.ListenTo(
 		in,
 		func(msg midi.Message, timestampms int32) {
-			fmt.Printf("[%v] %v\n", timestampms, msg)
+			log.Printf("@%vms %v %v", timestampms, []byte(msg), msg)
 
 			var bt []byte
 			var ch, key, vel uint8
 			switch {
 			case msg.GetSysEx(&bt):
-				fmt.Printf("got sysex: % X\n", bt)
+				log.Printf("got sysex: % X", bt)
 			case msg.GetNoteStart(&ch, &key, &vel):
-				fmt.Printf("starting note %s on channel %v with velocity %v\n",
+				log.Printf("starting note %s on channel %v with velocity %v",
 					midi.Note(key), ch, vel)
 			case msg.GetNoteEnd(&ch, &key):
-				fmt.Printf("ending note %s on channel %v\n",
+				log.Printf("ending note %s on channel %v",
 					midi.Note(key), ch)
 			default:
 				// ignore
 			}
 		},
 		midi.UseSysEx(),
-		//midi.HandleError(complain),
-		//midi.UseActiveSense(),
-		//midi.UseTimeCode(),
+		midi.HandleError(complain),
+		midi.UseActiveSense(),
+		midi.UseTimeCode(),
 	)
 	if err != nil {
-		fmt.Printf("ERROR: %s\n", err)
+		log.Printf("ERROR: %s", err)
 		return
 	}
 	defer stop()
 
-	fmt.Println("interrupt to stop listening")
+	log.Println("interrupt to stop listening")
 	for {
 		time.Sleep(1 * time.Hour)
 	}
 }
 
 func complain(err error) {
-	fmt.Println("o hai, an error:", err)
+	log.Println("o hai, an error:", err)
 }
 
 func must(err error) {
